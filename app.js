@@ -10,6 +10,8 @@ loadEventListeners();
 
 //Load all event listeners
 function loadEventListeners(){
+  //DOM Load event
+  document.addEventListener('DOMContentLoaded', getTasks);
   //Add task event
   form.addEventListener('submit', addTask);
   //Remove task event
@@ -20,6 +22,31 @@ function loadEventListeners(){
   filter.addEventListener('keyup', filterTasks)
 }
 
+//Get Tasks from LS
+function getTasks() {
+  let tasks;
+  if(localStorage.getItem('tasks') === null){
+    tasks = [];
+  } else {
+    tasks = JSON.parse(localStorage.getItem('tasks'))
+  }
+
+  tasks.forEach(function(task){
+    const li = document.createElement('li');
+    // Add class
+    li.className = 'collection-item';
+    //Create text node and append to li
+    li.appendChild(document.createTextNode(task));
+    // Create new link element
+    const link = document.createElement('a');
+    link.className = 'delete-item secondary-content';
+    link.innerHTML = '<i class="fa fa-remove"></i>';
+    li.appendChild(link);
+  
+    taskList.appendChild(li);
+
+  });
+}
 //Add Task
 function addTask(e){
   if(taskInput.value === ''){
@@ -40,9 +67,26 @@ function addTask(e){
 
   taskList.appendChild(li);
 
+  //Store in ls
+  storeTaskInLocalStorage(taskInput.value);
+
   taskInput.value= '';
 
   e.preventDefault();
+}
+
+//Store Task
+function storeTaskInLocalStorage(task) {
+  let tasks;
+  if(localStorage.getItem('tasks') === null){
+    tasks = [];
+  } else {
+    tasks = JSON.parse(localStorage.getItem('tasks'))
+  }
+
+  tasks.push(task);
+
+  localStorage.setItem('tasks', JSON.stringify(tasks))
 }
 
 //Remove Task
@@ -50,16 +94,46 @@ function removeTask(e){
   if(e.target.parentElement.classList.contains('delete-item')){
     if(confirm('Are You Sure?')){
     e.target.parentElement.parentElement.remove();
+
+    //Remove from Ls
+    removeTaskFromLocalStorage(e.target.parentElement.parentElement)
     }
   }
 }
 
+//Remove from Ls
+function removeTaskFromLocalStorage(taskItem) {
+  let tasks;
+  if(localStorage.getItem('tasks') === null){
+    tasks = [];
+  } else {
+    tasks = JSON.parse(localStorage.getItem('tasks'))
+  }
+
+  tasks.forEach(function(task){
+    if(task.Item.textContent ===task){
+      tasks.splice(index, 1);
+    }
+  });
+  localStorage.setItem('tasks', JSON.stringify(tasks));
+}
+
+
 //Clear Task
 function clearTasks(){
   taskList.innerHTML = '';
+
+  //Clear from Ls
+  clearTasksFromLocalStorage();
 }
 
-function filterTask(e){
+//Clear Tasks from Ls
+function clearTasksFromLocalStorage(){
+  localStorage.clear();
+}
+
+//Filter tasks
+function filterTasks(e){
   const text = e.target.value.toLowerCase();
   
   document.querySelectorAll('.collection-item').forEach(
